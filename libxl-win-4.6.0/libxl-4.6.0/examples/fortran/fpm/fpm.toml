@@ -1,0 +1,42 @@
+#
+# Ensure that FPM_LDFLAGS=../../../bin/libxl.dll or ../../../bin64/libxl.dll
+#
+name = "libxl"
+version = "4.5.1"
+author = "XLware"
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+module-naming = false
+[install]
+library = false
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"
+[[example]]
+name = "generate"
+source-dir = "generate"
+main = "generate.f90"
+[[example]]
+name = "extract"
+source-dir = "extract"
+main = "extract.f90"
+[[example]]
+name = "invoice"
+source-dir = "invoice"
+main = "invoice.f90"
+[[example]]
+name = "custom"
+source-dir = "custom"
+main = "custom.f90"
+[[example]]
+name = "edit"
+source-dir = "edit"
+main = "edit.f90"
+[[example]]
+name = "format"
+source-dir = "format"
+main = "format.f90"
+

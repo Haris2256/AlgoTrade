@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="example.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="21"/>
+      </Unit>
+      <Unit>
+        <Filename Value="main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <CursorPos X="35" Y="75"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="LibXL.pas"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="2921"/>
+        <CursorPos X="59" Y="2940"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\include\customform.inc"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="904"/>
+        <CursorPos Y="923"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\include\control.inc"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="2958"/>
+        <CursorPos Y="2976"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="29">
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1740" TopLine="1730"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1769" TopLine="1759"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1840" Column="5" TopLine="1826"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1813" TopLine="1802"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1836" TopLine="1825"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2011" Column="5" TopLine="1996"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2010" Column="6" TopLine="1997"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1689" Column="6" TopLine="1669"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1710" Column="59" TopLine="1690"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1689" Column="34" TopLine="1674"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1688" Column="53" TopLine="1674"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1689" Column="34" TopLine="1674"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1691" Column="53" TopLine="1674"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1694" Column="85" TopLine="1899"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1681" Column="83" TopLine="1675"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1691" Column="39" TopLine="1675"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1694" Column="77" TopLine="1675"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1690" Column="25" TopLine="1675"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2704" Column="107" TopLine="2689"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2934" Column="37" TopLine="2908"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1690" Column="68" TopLine="1668"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2937" Column="60" TopLine="2908"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2943" Column="65" TopLine="2913"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1458" Column="110" TopLine="1439"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1461" Column="93" TopLine="1439"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2937" Column="62" TopLine="2917"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2943" Column="58" TopLine="2917"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="1455" Column="27" TopLine="1439"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2934" Column="24" TopLine="2918"/>
+      </Position>
+      <Position>
+        <Filename Value="LibXL.pas"/>
+        <Caret Line="2940" Column="59" TopLine="2921"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
