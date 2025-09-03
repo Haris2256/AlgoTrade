@@ -19,3 +19,6 @@ text_colour = "#EEEEEE"
 # Watchlist Configuration
 num_stocks_per_row = 5
 num_stocks_per_column = 5
+
+# Date Format
+date_format = "%Y-%m-%d"

@@ -2,17 +2,22 @@ import yfinance as yf
 import tkinter as tk
 from openpyxl import load_workbook
 from ttkwidgets.autocomplete import AutocompleteEntry
+from datetime import date
+
 
 import variables
 import actions
 import watchlist
 import transactions
+import details
 
 # Colours
 side_colour = variables.side_colour
 main_panel_colour = variables.main_panel_colour
 stock_label_colour = variables.stock_label_colour
 text_colour = variables.text_colour
+
+date_format = variables.date_format
 
 owned_sheet = variables.owned_sheet
 
@@ -173,15 +178,29 @@ def initialize_gui(root):
 
     # Transaction button
     def on_transaction():
-        transaction_window = tk.Toplevel(root)
-        transactions.initialize_transaction_window(transaction_window)
-    transactionbtn = tk.Button(side_panel, text="Transactions", 
-                               command=on_transaction, font=("Poppins", 16))
+        transaction_frame = tk.Frame(root, bg=main_panel_colour)
+        main_frame.pack_forget()
+        transactions.initialize_transaction_window(transaction_frame, main_frame)
+    transactionbtn = tk.Button(
+        side_panel, 
+        text="Transactions", 
+        command=on_transaction, 
+        font=("Poppins", 16)
+    )
     transactionbtn.pack(padx=10, pady=10)
 
-    # Information Button
-    info = tk.Button(side_panel, text="More Details", font=("Poppins", 16))
-    info.pack(padx=10)
+    # Details Button
+    def on_details():
+        details_frame = tk.Frame(root, bg=main_panel_colour)
+        main_frame.pack_forget()
+        details.initialize_details_window(details_frame, main_frame)
+    details_btn = tk.Button(
+        side_panel, 
+        text="More Details", 
+        command=on_details, 
+        font=("Poppins", 16)
+    )
+    details_btn.pack(padx=10)
 
     ###################################################################
 
@@ -200,9 +219,17 @@ def initialize_gui(root):
         owned_stocks.append(owned_stock)
 
 def create_window(window, action, action_value):
-    window.geometry("400x300")
+    window.geometry("400x400")
     window.configure(bg=main_panel_colour)
     top_frame = tk.Frame(window, bg=main_panel_colour)
+    # Date Label
+    label = tk.Label(top_frame, text="Date", bg=stock_label_colour, fg=text_colour, font = ("Poppins", 12))
+    label.pack(pady=(10,0),fill="x", expand=True)
+    # Date Entry
+    date_entry = tk.Entry(top_frame, font=("Poppins", 8))
+    today_str = date.today().strftime(date_format)
+    date_entry.insert(0, today_str)
+    date_entry.pack(pady=10)
     # Stock Name Label
     label = tk.Label(top_frame, text="Stock Name", bg=stock_label_colour, fg=text_colour, font = ("Poppins", 12))
     label.pack(pady=(10,0),fill="x", expand=True)
@@ -229,7 +256,7 @@ def create_window(window, action, action_value):
     amount_entry.grid(row=0,column=0, padx=10, sticky="ew")
     # Share Amount Button
     def on_action_amount():
-        action(name_entry.get(), price_entry.get(), amount_entry.get())
+        action(date_entry.get(), name_entry.get(), price_entry.get(), amount_entry.get())
         window.destroy()
     stock_amount = tk.Button(bottom_frame, text="Share Amount",
                              command=on_action_amount,
@@ -240,7 +267,7 @@ def create_window(window, action, action_value):
     value_entry.grid(row=0, column=1, padx=10,sticky="ew")
     # Total Value Button
     def on_action_value():
-        action_value(name_entry.get(), price_entry.get(), value_entry.get(), action)
+        action_value(date_entry.get(), name_entry.get(), price_entry.get(), value_entry.get(), action)
         window.destroy()
     stock_value = tk.Button(bottom_frame, text="Total Value",
                             command=on_action_value,

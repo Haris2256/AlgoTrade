@@ -1,6 +1,7 @@
 import yfinance as yf
 import tkinter as tk
 from openpyxl import load_workbook
+import tkinter.messagebox as mb
 
 import variables
 
@@ -192,6 +193,7 @@ def initialize_watchlist(watchlist_frame, main_frame):
             ticker = yf.Ticker(new_stock)
             info = ticker.fast_info
         except Exception:
+            mb.showerror("Invalid Stock",f"This Stock is unknown: {new_stock}")
             return
         watchlist_sheet.cell(watchlist_sheet.max_row + 1, 1).value = new_stock
         add_to_watchlist(new_stock, watchlist_sheet.max_row)
