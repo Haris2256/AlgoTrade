@@ -13,6 +13,8 @@ text_colour = variables.text_colour
 
 watchlist_sheet = variables.watchlist_sheet
 
+tickers_dict = variables.tickers_dict
+
 num_stocks_per_column = variables.num_stocks_per_column
 num_stocks_per_row = variables.num_stocks_per_row
 
@@ -24,7 +26,7 @@ class Watchlist_Stock:
     def __init__(self, name, stock_frame, row):
         self.name = name
         self.row = row
-        self.ticker = yf.Ticker(name)
+        self.ticker = tickers_dict[self.name]
         self.current_price = self.ticker.fast_info["last_price"]
         self.prev_close = self.ticker.fast_info["previous_close"]
         self.pct_change = (self.current_price - self.prev_close) / self.prev_close * 100
@@ -101,9 +103,10 @@ class Watchlist_Stock:
         self.month_lbl.pack(anchor="e", padx=5)
         self.year_lbl.pack(anchor="e", padx=5)
         self.fivey_lbl.pack(anchor="e", padx=5, pady=(0,5))
-    def update(self):
+    def refresh(self):
         # recompute percent changes
-        self.ticker = yf.Ticker(self.name)
+        tickers_dict[self.name] = yf.Ticker(self.name)
+        self.ticker = tickers_dict[self.name]
         self.hist = self.ticker.history(period="5y")
         self.current_price = self.ticker.fast_info["last_price"]
         self.prev_close = self.ticker.fast_info["previous_close"]
@@ -155,7 +158,6 @@ def grid_watchlist_stocks():
 
 def initialize_watchlist(watchlist_frame, main_frame):
     if watchlist_stocks:
-        watchlist_frame.pack(side="right", fill="both", expand=True)
         return
     def add_to_watchlist(stock_name, row):
         stock_frame = tk.Frame(watch_frame)
@@ -171,9 +173,6 @@ def initialize_watchlist(watchlist_frame, main_frame):
     button_frame.pack(fill="x")
     watch_frame.pack(fill="both", expand=True)
 
-    # Pack Main Frame
-    watchlist_frame.pack(side="right", fill="both", expand=True)
-
     # Exit Button
     def on_exit():
         watchlist_frame.pack_forget()
@@ -184,18 +183,29 @@ def initialize_watchlist(watchlist_frame, main_frame):
 
     # Add Button
     def on_add():
-        new_stock = new_stock_entry.get()
-        new_stock = new_stock.upper()
-        for row in range(1,watchlist_sheet.max_row + 1):
-            if new_stock == watchlist_sheet.cell(row, 1).value:
+        new_stock = new_stock_entry.get().strip().upper()
+        
+        # Prevent duplicates in the sheet
+        for row in range(1, watchlist_sheet.max_row + 1):
+            if new_stock == str(watchlist_sheet.cell(row, 1).value).strip().upper():
                 return
+        
         try:
-            ticker = yf.Ticker(new_stock)
-            info = ticker.fast_info
+            # Check dictionary cache first
+            if new_stock in tickers_dict:
+                ticker = tickers_dict[new_stock]
+            else:
+                ticker = yf.Ticker(new_stock)
+                info = ticker.fast_info  # forces validation (may raise if invalid)
+                tickers_dict[new_stock] = ticker  # cache it for next time
         except Exception:
-            mb.showerror("Invalid Stock",f"This Stock is unknown: {new_stock}")
+            mb.showerror("Invalid Stock", f"This stock is unknown: {new_stock}")
             return
+
+        # Append to sheet
         watchlist_sheet.cell(watchlist_sheet.max_row + 1, 1).value = new_stock
+        
+        # Update GUI
         add_to_watchlist(new_stock, watchlist_sheet.max_row)
 
     add_frame = tk.Frame(button_frame, bg=main_panel_colour)
@@ -226,12 +236,12 @@ def initialize_watchlist(watchlist_frame, main_frame):
     remove_frame.pack(side="right")
 
     # Update Button
-    def update_watchlist_stocks():
+    def refresh_watchlist_stocks():
         for watchlist_stock in watchlist_stocks:
-            watchlist_stock.update()
-    update_btn = tk.Button(button_frame, text="Update", command=update_watchlist_stocks,
+            watchlist_stock.refresh()
+    refresh_btn = tk.Button(button_frame, text="Refresh", command=refresh_watchlist_stocks,
                            font=("Poppins", 12))
-    update_btn.pack(side="right", anchor="n",padx=10, pady=10)
+    refresh_btn.pack(side="right", anchor="n",padx=10, pady=10)
 
     # Configure Main Frame 
     for i in range(num_stocks_per_column):

@@ -4,6 +4,7 @@ from datetime import datetime
 import tkinter.messagebox as mb
 from tkinter import ttk
 
+import scrollarea
 import variables
 
 transaction_sheet = variables.transaction_sheet
@@ -17,7 +18,7 @@ date_format = variables.date_format
 
 transactions = []
 
-sort_options = ["Date", "Stock", "Action", "Price", "Amount", "Value"]
+sort_options = ["Date", "Stock", "Action", "Price", "Value"]
 
 class Transaction:
     def __init__(self, row, frame):
@@ -172,15 +173,13 @@ def refresh_transaction_gui():
         transaction.frame.pack(padx=5, pady=2, fill="x")
 
 
-def initialize_transaction_window(transaction_frame, main_frame):
-    transaction_frame.pack(side="right", fill="both", expand=True)
+def initialize_transactions(transaction_frame, main_frame):
     button_frame = tk.Frame(transaction_frame, bg=main_panel_colour)
     button_frame.pack(fill="x")
 
     # Exit Button
     def on_exit():
         transactions.clear()
-        transaction_frame.destroy()
         collapse_empty_rows(transaction_sheet)
         main_frame.pack(side="right", fill="both", expand=True)
 
@@ -225,6 +224,11 @@ def initialize_transaction_window(transaction_frame, main_frame):
     reverse_sort = tk.BooleanVar(value=False)  # Default unchecked (ascending)
     reverse_check = tk.Checkbutton(
         button_frame,
+        bg=main_panel_colour,             # background of the whole widget
+        fg=text_colour,                   # label + checkmark color
+        activebackground=main_panel_colour,
+        activeforeground=text_colour,
+        selectcolor=main_panel_colour,
         text="Reverse",
         variable=reverse_sort,
         command=on_sort_change,
@@ -242,52 +246,15 @@ def initialize_transaction_window(transaction_frame, main_frame):
         values=sort_options, 
         state="readonly", 
         font=("Poppins", 12), 
-        width=6, 
-        height=4
+        width=6
     )
     sort_menu.current(0)
-    sort_menu.pack(pady=10, padx=10, side="right")
+    sort_menu.pack(pady=10, padx=10, side="right", fill="y")
     sort_menu.bind("<<ComboboxSelected>>", on_sort_change)
 
     # List of transactions
-    container = tk.Frame(transaction_frame)         # holds both canvas and scrollbar
-    container.pack(fill="both", expand=True)
-
-    canvas = tk.Canvas(container, bg=main_panel_colour, highlightthickness=0)
-    canvas.pack(side="left", fill="both", expand=True)
-
-    scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
-    scrollbar.pack(side="right", fill="y")
-
-    # link canvas and scrollbar
-    canvas.configure(yscrollcommand=scrollbar.set)
-
-    # --- frame inside canvas where content goes ---
-    actual_transactions_frame = tk.Frame(canvas, bg=main_panel_colour)
-
-    # put that frame into the canvas
-    window_id = canvas.create_window((0,0), window=actual_transactions_frame, anchor="nw")
-
-    # update scrollregion when widgets inside transaction_frame change size
-    def on_frame_configure(event):
-        canvas.configure(scrollregion=canvas.bbox("all"))
-
-    actual_transactions_frame.bind("<Configure>", on_frame_configure)
-
-    def on_canvas_configure(event):
-        canvas.itemconfig(window_id, width=event.width)  # stretch to canvas width
-
-    canvas.bind("<Configure>", on_canvas_configure)
-
-    # Enable mousewheel scrolling
-    def _on_mousewheel(event):
-        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-
-    canvas.bind_all("<MouseWheel>", _on_mousewheel)   # Windows/Mac
-    canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))  # Linux
-    canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(1, "units"))   # Linux
-
-    header_frame = tk.Frame(actual_transactions_frame, bg=stock_label_colour, bd=1, relief="raised")
+    content_frame = scrollarea.make_scrollarea(transaction_frame, main_panel_colour)
+    header_frame = tk.Frame(content_frame, bg=stock_label_colour, bd=1, relief="raised")
     header_frame.pack(fill="x", padx=5, pady=10)
     for i in range(1,transaction_sheet.max_column + 1):
         header_frame.columnconfigure(i, weight=1, uniform="equal")
@@ -302,9 +269,9 @@ def initialize_transaction_window(transaction_frame, main_frame):
         )
         label.grid(row=0,column=i, sticky="ew")
 
-    # Transction rows
+    # Transaction rows
     for row in range(2, transaction_sheet.max_row + 1):
-        frame = tk.Frame(actual_transactions_frame)
+        frame = tk.Frame(content_frame)
         transaction = Transaction(row, frame)
         transactions.append(transaction)
 

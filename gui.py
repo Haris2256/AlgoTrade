@@ -10,6 +10,7 @@ import actions
 import watchlist
 import transactions
 import details
+import frame_manager
 
 # Colours
 side_colour = variables.side_colour
@@ -20,14 +21,16 @@ text_colour = variables.text_colour
 date_format = variables.date_format
 
 owned_sheet = variables.owned_sheet
+owned_header = variables.owned_header
+
+tickers_dict = variables.tickers_dict
 
 stocks = load_workbook(variables.file)
 STOCKS = []
 owned_stocks = []
 
-for row in range(2, owned_sheet.max_row + 1):
-    stock_name = owned_sheet.cell(row, 1).value
-    STOCKS.append(stock_name)
+for name in tickers_dict:
+    STOCKS.append(name)
 
 # Colours
 side_colour = "#363636"
@@ -40,11 +43,11 @@ class Owned_Stock:
         self.row = row
         self.name = owned_sheet.cell(row,1).value
         self.owned_frame = owned_frame
-        self.ticker = yf.Ticker(self.name)
+        self.ticker = tickers_dict[self.name]
         self.price = self.ticker.fast_info['last_price']
         self.prev_close = self.ticker.fast_info["previous_close"]
         self.change = (self.price - self.prev_close) / self.prev_close * 100
-        self.amount = owned_sheet.cell(self.row, 2).value
+        self.amount = owned_sheet.cell(self.row, owned_header["amount"]).value
         self.name_lbl = tk.Label(self.owned_frame,
                                     bg=stock_label_colour,
                                     fg=text_colour,
@@ -77,17 +80,18 @@ class Owned_Stock:
         self.owned_frame.pack(padx=5,pady=(10,0), fill="x")
 
     def update_all(self):
-        self.ticker = yf.Ticker(self.name)
+        tickers_dict[self.name] = yf.Ticker(self.name)
+        self.ticker = tickers_dict[self.name]
         self.price = self.ticker.fast_info['last_price']
         self.prev_close = self.ticker.fast_info["previous_close"]
         self.change = (self.price - self.prev_close) / self.prev_close * 100
-        self.amount = owned_sheet.cell(self.row, 2).value
+        self.amount = owned_sheet.cell(self.row, owned_header["amount"]).value
     
     def update_amount(self):
-        if owned_sheet.cell(self.row,2).value is None:
+        if owned_sheet.cell(self.row, owned_header["amount"]).value is None:
             self.amount = 0
         else:
-            self.amount = owned_sheet.cell(self.row,2).value
+            self.amount = owned_sheet.cell(self.row, owned_header["amount"]).value
         self.amount_lbl.configure(text=f"{self.amount:.2f}")
 
 def create_stock_frame(stock_frame, label_texts):
@@ -104,7 +108,7 @@ def create_stock_frame(stock_frame, label_texts):
 
 def clean_up_sheet():
     for row in range(owned_sheet.max_row, 1, -1):
-        amount = owned_sheet.cell(row, 2).value
+        amount = owned_sheet.cell(row, owned_header["amount"]).value
         if amount == 0 or amount is None:
             owned_sheet.delete_rows(row, 1)
 
@@ -121,7 +125,7 @@ def update_amounts():
 def align_rows():
     for i, owned_stock in enumerate(owned_stocks):
         owned_stock.row = i + 2
-        if owned_stock.name != owned_sheet.cell(owned_stock.row, 1).value:
+        if owned_stock.name != owned_sheet.cell(owned_stock.row, owned_header["name"]).value:
             print(f"rows don't align: {owned_stock.name} != {owned_sheet.cell(owned_stock.row, 1).value}")
 
 # Elements of GUI 
@@ -129,6 +133,7 @@ def align_rows():
 def initialize_gui(root):
     root.title("Stock Manager")
     root.geometry("800x600")
+    root.configure(bg=main_panel_colour)
 
     # Side Panel
     side_panel = tk.Frame(root, bg=side_colour)
@@ -146,8 +151,8 @@ def initialize_gui(root):
             owned_stocks.append(owned_stock)
         else:
             update_amounts()
-    buybtn = tk.Button(side_panel, text="Buy Stock", command=on_buy, font = ("Poppins", 16))
-    buybtn.pack(padx=10, pady=10)
+    buy_btn = tk.Button(side_panel, text="Buy Stock", command=on_buy, font = ("Poppins", 16))
+    buy_btn.pack(padx=10, pady=10)
 
     # Sell button
     def on_sell():
@@ -160,40 +165,49 @@ def initialize_gui(root):
         if len(owned_stocks) != owned_sheet.max_row - 1:
             clean_up_owned()
             align_rows()
-    sellbtn = tk.Button(side_panel, text="Sell Stock", command=on_sell, font = ("Poppins", 16))
-    sellbtn.pack(padx=10)
+    sell_btn = tk.Button(side_panel, text="Sell Stock", command=on_sell, font = ("Poppins", 16))
+    sell_btn.pack(padx=10)
+
+    # All the frames are below
+    
+    manager = frame_manager.Frame_Manager()
 
     # Watchlist Button Command
     watchlist_frame = tk.Frame(root, bg=main_panel_colour)
+    manager.add_frame("watchlist", watchlist_frame)
     def on_watchlist():
-        main_frame.pack_forget()
         watchlist.initialize_watchlist(watchlist_frame, main_frame)
+        manager.show_frame("watchlist")
     # Watchlist Button
-    watchbtn = tk.Button(side_panel, text="Watchlist", command=on_watchlist, font = ("Poppins", 16))
-    watchbtn.pack(padx=10, pady=10)
+    watch_btn = tk.Button(side_panel, text="Watchlist", command=on_watchlist, font = ("Poppins", 16))
+    watch_btn.pack(padx=10, pady=10)
 
     # Suggestions button
-    suggestionbtn = tk.Button(side_panel, text="Suggestions",font=("Poppins", 16))
-    suggestionbtn.pack(padx=10)
+    suggestion_btn = tk.Button(side_panel, text="Suggestions",font=("Poppins", 16))
+    suggestion_btn.pack(padx=10)
 
     # Transaction button
     def on_transaction():
+        if "transaction" in manager.frames:
+            manager.frames["transaction"].destroy()
         transaction_frame = tk.Frame(root, bg=main_panel_colour)
-        main_frame.pack_forget()
-        transactions.initialize_transaction_window(transaction_frame, main_frame)
-    transactionbtn = tk.Button(
+        manager.add_frame("transaction", transaction_frame)
+        transactions.initialize_transactions(transaction_frame, main_frame)
+        manager.show_frame("transaction")
+    transaction_btn = tk.Button(
         side_panel, 
         text="Transactions", 
         command=on_transaction, 
         font=("Poppins", 16)
     )
-    transactionbtn.pack(padx=10, pady=10)
+    transaction_btn.pack(padx=10, pady=10)
 
     # Details Button
+    details_frame = tk.Frame(root, bg=main_panel_colour)
+    manager.add_frame("details", details_frame)
     def on_details():
-        details_frame = tk.Frame(root, bg=main_panel_colour)
-        main_frame.pack_forget()
-        details.initialize_details_window(details_frame, main_frame)
+        manager.show_frame("details")
+        details.initialize_details(details_frame, main_frame)
     details_btn = tk.Button(
         side_panel, 
         text="More Details", 
@@ -207,6 +221,7 @@ def initialize_gui(root):
     # Main panel
     main_frame = tk.Frame(root, bg=main_panel_colour)
     main_frame.pack(side = "right", fill = "both", expand = True)
+    manager.add_frame("main", main_frame)
     
     # Title Frame
     title_frame = tk.Frame(main_frame, bg=stock_label_colour)
