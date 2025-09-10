@@ -179,6 +179,7 @@ def initialize_transactions(transaction_frame, main_frame):
 
     # Exit Button
     def on_exit():
+        transaction_frame.destroy()
         transactions.clear()
         collapse_empty_rows(transaction_sheet)
         main_frame.pack(side="right", fill="both", expand=True)

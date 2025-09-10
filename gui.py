@@ -82,7 +82,7 @@ class Owned_Stock:
     def update_all(self):
         tickers_dict[self.name] = yf.Ticker(self.name)
         self.ticker = tickers_dict[self.name]
-        self.price = self.ticker.fast_info['last_price']
+        self.price = self.ticker.fast_info["last_price"]
         self.prev_close = self.ticker.fast_info["previous_close"]
         self.change = (self.price - self.prev_close) / self.prev_close * 100
         self.amount = owned_sheet.cell(self.row, owned_header["amount"]).value
@@ -206,8 +206,12 @@ def initialize_gui(root):
     details_frame = tk.Frame(root, bg=main_panel_colour)
     manager.add_frame("details", details_frame)
     def on_details():
-        manager.show_frame("details")
+        if "details" in manager.frames:
+            manager.frames["details"].destroy()
+        details_frame = tk.Frame(root, bg=main_panel_colour)
+        manager.add_frame("details", details_frame)
         details.initialize_details(details_frame, main_frame)
+        manager.show_frame("details")
     details_btn = tk.Button(
         side_panel, 
         text="More Details", 
