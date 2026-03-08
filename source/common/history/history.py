@@ -27,3 +27,8 @@ class History(ABC):
     def pct_change(self, symbol: Symbol, first_day: date, second_day: date) -> float:
         """Retrieves the change in price of a given symbol between two dates"""
         pass
+
+    @abstractmethod
+    def market_price(self, symbol: Symbol, time: datetime) -> float:
+        """Retrieves the symbol's market price at the given time"""
+        pass

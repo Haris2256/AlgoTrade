@@ -1,5 +1,5 @@
 import traceback
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from pandas import DataFrame
 import yfinance as yf
@@ -17,7 +17,7 @@ class AHistory(History):
     def get_closing_price(self, symbol: Symbol, day: date) -> float:
         """Retrieve the closing price of the given symbol on the given market day"""
         try:
-            return self.history_data.loc[day.strftime("%Y-%m-%d"), "Close"].loc[symbol]
+            return self.history_data.loc[self.history_data.asof(datetime.combine(day, datetime.max.time())), "Close"].loc[symbol]
         except KeyError:
             traceback.print_exc()
             raise HistoryError("Error retrieving data, traceback above")
@@ -26,16 +26,19 @@ class AHistory(History):
         """Gets the most recent valid market day strictly before the given day"""
         prev_day: date = day - timedelta(days=1)
         try:
-            return self.history_data.index.asof(prev_day.strftime("%Y-%m-%d")).date()
+            return self.history_data.index.asof(datetime.combine(prev_day, datetime.min.time())).date()
         except KeyError:
             raise HistoryError(f"No valid market days before {day}.")
 
-    def pct_change(self, symbol: Symbol, first_day: date, second_day: date) -> float:
+    def pct_change(self, symbol: Symbol, start: datetime, end: datetime) -> float:
         try:
-            first_price = self.history_data.loc[first_day.strftime("%Y-%m-%d"), "Close"].loc[symbol]
+            first_price = self.history_data.loc[start, "Close"].loc[symbol]
             second_price = self.history_data.loc[second_day.strftime("%Y-%m-%d"), "Close"].loc[symbol]
         except KeyError:
             traceback.print_exc()
             raise HistoryError("Error retrieving data, traceback above")
         return second_price / first_price - 1
+
+    def market_price(self, symbol: Symbol, time: datetime) -> float:
+
 
