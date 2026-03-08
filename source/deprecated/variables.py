@@ -1,7 +1,7 @@
 from openpyxl import load_workbook
 import yfinance as yf
 
-file = "stocks.xlsx"
+file = "../../data/stocks.xlsx"
 stocks = load_workbook(file)
 
 # Spreadsheets

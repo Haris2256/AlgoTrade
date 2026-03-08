@@ -9,7 +9,7 @@ import variables
 import actions
 import watchlist
 import transactions
-import details
+from source.deprecated import details
 import frame_manager
 
 # Colours

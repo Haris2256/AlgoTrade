@@ -1,6 +1,5 @@
 import yfinance as yf
 import tkinter as tk
-from openpyxl import load_workbook
 import tkinter.messagebox as mb
 
 import variables

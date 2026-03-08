@@ -1,4 +1,3 @@
-from openpyxl import load_workbook
 from datetime import datetime
 import tkinter.messagebox as mb
 import yfinance as yf

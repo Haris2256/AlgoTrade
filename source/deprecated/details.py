@@ -1,11 +1,6 @@
 import tkinter as tk
-from openpyxl import load_workbook
-from datetime import datetime
-import tkinter.messagebox as mb
-from tkinter import ttk
 
-import scrollarea
-import variables
+from source.deprecated import scrollarea, variables
 
 transaction_sheet = variables.transaction_sheet
 transaction_header = variables.transaction_header
