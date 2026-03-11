@@ -1,67 +1,116 @@
+import copy
+from dataclasses import dataclass
 
+from source.bots.bot import Bot
+from source.bots.dumbass import Dumbass
 from source.common.action import Action, Buy, Sell
-from source.common.history.ahistory import AHistory
-from source.common.portfolio import Symbol, Holding
+from source.common.history.ahistory import AHistory, Interval
+from source.common.history.history import History, HistoryError
+from source.common.portfolio import Symbol
 from source.deprecated import variables
-from source.bots import bot
 from source.bots import dumbass
-from datetime import datetime
+from datetime import datetime, date
 from source.common.state import State
 
-start_date = "2020-07-03"
-end_date = "2025-08-05"
-date_format = variables.date_format
+class InvalidActionError(Exception):
+    pass
 
-start = datetime.strptime(start_date, date_format)
-end = datetime.strptime(end_date, date_format)
+@dataclass
+class BacktestMetrics:
+    """Backtesting performance metrics"""
+    total_pnl: float
+    """Final net value / Initial net value"""
 
-num_days = (end - start).days
-money = 100000
+class BackTester:
+    """Backtests a bot over a defined time period"""
 
-b = dumbass.Dumbass()
+    def __init__(self, start_date: date, end_date: date, interval: Interval = Interval.ONE_DAY):
+        self._start_date = start_date
+        """Backtest start date"""
+        self._end_date = end_date
+        """Backtest end date"""
+        self._interval = interval
+        """Time interval between bot actions during the backtest"""
 
-holdings: dict[Symbol, Holding] = {}
-history = AHistory(["AAPL"], start, end)
-state = State(money, {}, start, history)
+
+    def run(self, bot: Bot, cash: float, holdings: dict[Symbol, float]):
+        """Backtests the given bot"""
+        history = AHistory(list(holdings.keys()), self._start_date, self._end_date, self._interval)
+        timestamps = history.get_timestamps()
+        initial_state = State(cash, holdings.copy(), history.first_timestamp(), history)
+        state = copy.copy(initial_state)
+
+        step_count: int = 0
+        for t in timestamps:
+            step_count += 1
+
+            state.cur_time = t
+            self._handle_actions(bot.act(state), state)
+
+        metrics = self._performance_metrics(initial_state, state)
+        print(f"Ran backtest over {step_count} steps, interval: {self._interval.value}")
+        print(f"Initial net: {initial_state.net_value()}")
+        print(f"Final net: {state.net_value()}")
+        print(f"Total P&L: {round((metrics.total_pnl - 1) * 100, 2)}%")
 
 
-def _handle_buy(buy: Buy, state: State) -> None:
-    """Handles the 'buy' action"""
-    try:
-        cur_price = history.market_price(Buy.symbol, State.cur_time)
-    except KeyError:
-        raise f"Security not found in history: {buy.symbol}"
-    if state.cash >= buy.amount * cur_price:
+    @staticmethod
+    def _performance_metrics(pre: State, post: State) -> BacktestMetrics:
+        """Calculates performance metrics based on performance from 'pre' to 'post'"""
+        total_pnl: float = post.net_value() / pre.net_value()
+        return BacktestMetrics(
+            total_pnl=total_pnl
+        )
+
+
+    @staticmethod
+    def _handle_buy(buy: Buy, state: State) -> None:
+        """Handles the 'buy' action"""
         try:
-            holdings[buy.symbol].amount += buy.amount
-            # change value?
+            cur_price = state.history.market_price(buy.symbol, state.cur_time)
+        except HistoryError as e:
+            raise InvalidActionError(repr(e))
+
+        value = cur_price * buy.amount
+        if not state.cash >= value:
+            raise InvalidActionError(f"Insufficient cash to perform buy action {Buy}")
+
+        state.cash -= value
+        try:
+            state.holdings[buy.symbol] += buy.amount
         except KeyError:
-            raise f"Security not found in holdings: {buy.symbol}"
-    else: # Is raising in an else ok...
-        raise f"Not enough cash to buy {buy.symbol} (Have: {state.cash}, Need: {buy.amount * cur_price})"
-
-def _handle_sell(sell: Sell, state: State) -> None:
-    try:
-        cur_amount = state.holdings[sell.symbol].amount
-    except KeyError:
-        raise f"Security not found in holdings: {sell.symbol}"
-    if cur_amount > sell.amount :
-        holdings[sell.symbol].amount -= sell.amount
-        # change holding.value?
-    else:
-        raise f"Not enough money ({State.cash}) to buy {Buy.symbol}"
+            state.holdings[buy.symbol] = buy.amount
 
 
-def _handle_action(a: Action, state: State) -> None:
-    """Executes the given action, if possible"""
-    if isinstance(a, Buy):
-        _handle_buy(a, state)
-    elif isinstance (a, Sell):
-        _handle_sell(a, state)
-for i in range (num_days):
+    @staticmethod
+    def _handle_sell(sell: Sell, state: State) -> None:
+        if not sell.symbol in state.holdings and state.holdings[sell.symbol] > sell.amount:
+            raise InvalidActionError(f"Insufficient holdings to perform sell action {Sell}")
 
-    actions = b.act(state)
-    for action in actions:
-        _handle_action(action, state)
+        try:
+            cur_price = state.history.market_price(sell.symbol, state.cur_time)
+        except HistoryError as e:
+            raise InvalidActionError(repr(e))
 
-print(_handle_buy((Buy("AAPL", 5)), State(1000,["AAPL", Holding(20, 20)], datetime(2020, 1, 1))))
+        state.cash += cur_price * sell.amount
+        state.holdings[sell.symbol] -= sell.amount
+
+
+    @staticmethod
+    def _handle_actions(actions: list[Action], state: State) -> None:
+        """Executes the given action, if possible"""
+        for a in actions:
+            if isinstance(a, Buy):
+                BackTester._handle_buy(a, state)
+            elif isinstance (a, Sell):
+                BackTester._handle_sell(a, state)
+
+
+def _main():
+    bot = Dumbass()
+    back_tester = BackTester(date(2025,1,1), date(2025,12,31))
+    back_tester.run(bot, 100000, {"AAPL": 0})
+
+
+if __name__ == "__main__":
+    _main()

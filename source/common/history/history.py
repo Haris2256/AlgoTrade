@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Generator
 
 import yfinance as yf
 from pandas import DataFrame
@@ -13,10 +13,6 @@ class HistoryError(Exception):
 
 class History(ABC):
     """History of security data"""
-    @abstractmethod
-    def get_closing_price(self, symbol: Symbol, day: date) -> float:
-        """Retrieves the closing price of a given symbol on a given day"""
-        pass
 
     @abstractmethod
     def prev_market_day(self, day: date) -> date:
@@ -24,11 +20,20 @@ class History(ABC):
         pass
 
     @abstractmethod
-    def pct_change(self, symbol: Symbol, first_day: date, second_day: date) -> float:
-        """Retrieves the change in price of a given symbol between two dates"""
+    def pct_change(self, symbol: Symbol, start: datetime, end: datetime) -> float:
+        """Retrieves the change in price of a given symbol between two timestamps"""
         pass
 
     @abstractmethod
-    def market_price(self, symbol: Symbol, time: datetime) -> float:
+    def market_price(self, symbol: Symbol, timestamp: datetime) -> float:
         """Retrieves the symbol's market price at the given time"""
         pass
+
+    @abstractmethod
+    def get_timestamps(self) -> Generator[datetime, None, None]:
+        """A generator that iterates over all contained timestamps"""
+        pass
+
+    @abstractmethod
+    def first_timestamp(self) -> datetime:
+        """Retrieves the earliest timestamp"""
