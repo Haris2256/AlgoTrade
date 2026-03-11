@@ -12,7 +12,7 @@ class AHistory(History):
     """Data on a specific set of symbols, during a specific time-frame"""
 
     def __init__(self, symbols: list[Symbol], start_date: date, end_date: date):
-        self.history_data: DataFrame = yf.download(symbols, start=start_date, end=end_date)
+        self.history_data: DataFrame = yf.download(symbols, start=start_date, end=end_date, interval="1h")
 
     def get_closing_price(self, symbol: Symbol, day: date) -> float:
         """Retrieve the closing price of the given symbol on the given market day"""
@@ -33,12 +33,17 @@ class AHistory(History):
     def pct_change(self, symbol: Symbol, start: datetime, end: datetime) -> float:
         try:
             first_price = self.history_data.loc[start, "Close"].loc[symbol]
-            second_price = self.history_data.loc[second_day.strftime("%Y-%m-%d"), "Close"].loc[symbol]
+            second_price = self.history_data.loc[end.strftime("%Y-%m-%d"), "Close"].loc[symbol]
         except KeyError:
             traceback.print_exc()
             raise HistoryError("Error retrieving data, traceback above")
         return second_price / first_price - 1
 
     def market_price(self, symbol: Symbol, time: datetime) -> float:
-
-
+        """Gets the market price of the given symbol on the specified day, at the closest time"""
+        try:
+            market_price = self.history_data.loc[time, "Close"].loc[symbol]
+            return market_price
+        except KeyError:
+            traceback.print_exc()
+            raise HistoryError(f"No market price at {time}")
