@@ -45,6 +45,7 @@ class BacktestMetrics:
             curr_risk_free_rate = risk_free / prev_risk_free_rate - 1
             excess_return = curr_return - curr_risk_free_rate
             excess_returns.append(excess_return)
+            prev_net_value, prev_risk_free_rate = net_value, risk_free
         standard_deviation_excess = stat.stdev(excess_returns)
         mean_excess_return = sum(excess_returns) / len(excess_returns)
         sharpe_daily = mean_excess_return / standard_deviation_excess if standard_deviation_excess != 0 else 0
