@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from source.bots.bot import Bot
 from source.bots.dumbass import Dumbass
+from source.bots.snp500bot import SNP500
 from source.common.action import Action, Buy, Sell
 from source.common.history.ahistory import AHistory, Interval
 from source.common.history.history import History, HistoryError
@@ -110,6 +111,9 @@ def _main():
     bot = Dumbass()
     back_tester = BackTester(date(2025,1,1), date(2025,12,31))
     back_tester.run(bot, 100000, {"AAPL": 0})
+
+    bot = SNP500()
+    back_tester.run(bot, 100000, {"VOO": 0})
 
 
 if __name__ == "__main__":

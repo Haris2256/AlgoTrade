@@ -14,5 +14,6 @@ class State:
 
     def net_value(self):
         net: float = self.cash
-        net += sum(self.history.market_price(symbol, self.cur_time) for symbol in self.holdings)
+        for symbol, quantity in self.holdings.items():
+            net += quantity * self.history.market_price(symbol, self.cur_time)
         return net
