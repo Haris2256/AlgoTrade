@@ -28,12 +28,13 @@ class Interval(Enum):
     ONE_MONTH = "1mo"
     THREE_MONTHS = "3mo"
 
-
+TBILL: str = "^IRX"
 class AHistory(History):
     """Data on a specific set of symbols, during a specific time-frame"""
 
     def __init__(self, symbols: list[Symbol], start_date: date, end_date: date, interval: Interval = Interval.ONE_DAY):
-        self.history_data: DataFrame = yf.download(symbols, start=start_date, end=end_date, interval=interval.value)
+        symbols.append(TBILL)
+        self.history_data: DataFrame = yf.download(set(symbols), start=start_date, end=end_date, interval=interval.value)
         pd_utils.normalize_dt_index(self.history_data)
 
 

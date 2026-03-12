@@ -27,15 +27,16 @@ class Dumbass(Bot):
         cur_date = state.cur_time.date()
         try:
             prev_date = state.history.prev_market_day(cur_date)
-            pct_change = state.history.pct_change(APPLE_STOCK, prev_date, cur_date)
+            pct_change = state.history.pct_change(APPLE_STOCK, prev_date, state.cur_time)
         except HistoryError:
             pct_change = 0
 
-        print(pct_change)
         if pct_change >= 2:
-            actions.append(Sell(APPLE_STOCK, owned))
-        elif pct_change <= 0.1:
-            actions.append(Buy(APPLE_STOCK, 1))
+            quantity = owned / 2
+            actions.append(Sell(APPLE_STOCK, quantity))
+        elif pct_change <= -2:
+            quantity = state.cash / 2 / state.history.market_price(APPLE_STOCK, state.cur_time)
+            actions.append(Buy(APPLE_STOCK, quantity))
 
         return actions
 
